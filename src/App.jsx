@@ -1,39 +1,32 @@
-import { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from "react-redux";
-import Header from "./components/Header";
-import Home from "./components/Home";
-import EmptyBoard from './components/EmptyBoard';
-import boardsSlice from "./redux/boardsSlice";
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import LoginPage from './components/auth/LoginPage'
+import SignupPage from './components/auth/SignupPage'
+import Dashboard from './components/Dashboard'
 
 function App() {
-  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
-  const dispatch = useDispatch();
-  const boards = useSelector((state) => state.boards);
-  const activeBoard = boards.find((board) => board.isActive);
-
-  useEffect(() => {
-    if (!activeBoard && boards.length > 0) {
-      dispatch(boardsSlice.actions.setBoardActive({ index: 0 }));
-    }
-  }, [activeBoard, boards.length, dispatch]);
-
   return (
-    <div className="overflow-hidden overflow-x-scroll">
-      {boards.length > 0 ? (
-        <>
-          <Header
-            setIsBoardModalOpen={setIsBoardModalOpen}
-            isBoardModalOpen={isBoardModalOpen}
-          />
-          <Home
-            setIsBoardModalOpen={setIsBoardModalOpen}
-            isBoardModalOpen={isBoardModalOpen}
-          />
-        </>
-      ) : (
-        <EmptyBoard type='add'/>
-      )}
-    </div>
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   )
 }
 
